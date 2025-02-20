@@ -30,15 +30,16 @@ public class Worker : BackgroundService
             {
                 var context = scope.ServiceProvider.GetRequiredService<SicemContext>();
                 var whatsAppService = scope.ServiceProvider.GetRequiredService<WhatsAppService>();
+                var twillioService = scope.ServiceProvider.GetRequiredService<TwillioService>();
 
-                await DoWork(stoppingToken, context, whatsAppService);
+                await DoWork(stoppingToken, context, whatsAppService, twillioService);
             }
 
             await Task.Delay(workerSettings.Delay, stoppingToken);
         }
     }
 
-    private async Task DoWork(CancellationToken stoppingToken, SicemContext context, WhatsAppService whatsAppService)
+    private async Task DoWork(CancellationToken stoppingToken, SicemContext context, WhatsAppService whatsAppService, TwillioService twillioService)
     {
         var envios = 0;
         var boletines = this.GetBoletinesPendientes(context);
@@ -71,7 +72,10 @@ public class Worker : BackgroundService
                 }
 
                 // * send messages
-                var results = await EnviarMensage(whatsAppService, dest, mensajes);
+                //var results = await EnviarMensage(whatsAppService, dest, mensajes);
+
+                var results = await EnviarMensageTwillio(twillioService, dest, mensajes);
+
                 await UdpateDesti(context, dest, results);
 
                 envios += mensajes.Count();
@@ -169,6 +173,31 @@ public class Worker : BackgroundService
                     destinatario.Telefono.ToString(),
                     mes.Mensaje,
                     $"{destinatario.Lada}1"
+                );
+            }
+
+            result1.MessageId = mes.Id.ToString();
+            response.Add(result1);
+            await Task.Delay(1000);
+        }
+
+        return response;
+    }
+
+    private async Task<IEnumerable<MessageResult>> EnviarMensageTwillio(TwillioService twillioService, Destinatario destinatario, IEnumerable<BoletinMensaje> boletinMensajes)
+    {
+        var response = new List<MessageResult>();
+
+        foreach(var mes in boletinMensajes)
+        {
+            MessageResult result1 = new();
+            // * Send eth message an retrive the response
+            if(mes.EsArchivo != true)
+            {
+                result1 = await twillioService.SendMessage(
+                    destinatario.Telefono.ToString(),
+                    mes.Mensaje,
+                    destinatario.Lada ?? "52"
                 );
             }
 
