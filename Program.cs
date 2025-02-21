@@ -2,8 +2,19 @@ using BoletinServiceWorker;
 using BoletinServiceWorker.Data;
 using BoletinServiceWorker.Helpers;
 using BoletinServiceWorker.Services;
+using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// * configure serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Services.AddLogging(logginBuilder =>{
+    logginBuilder.AddSerilog();
+});
+
 builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("WhatsAppSettings"));
 builder.Services.Configure<WorkerSettings>(builder.Configuration.GetSection("WorkerSettings"));
 builder.Services.Configure<TwillioSettings>(builder.Configuration.GetSection("TwillioSettings"));
