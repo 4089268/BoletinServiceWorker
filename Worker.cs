@@ -71,10 +71,17 @@ public class Worker : BackgroundService
                     return;
                 }
 
-                // * send messages
-                //var results = await EnviarMensage(whatsAppService, dest, mensajes);
 
-                var results = await EnviarMensageTwillio(twillioService, dest, mensajes);
+                // * send messages, switch between whatsapp and twillio
+                IEnumerable<MessageResult> results = Array.Empty<MessageResult>();
+                if(this.workerSettings.UseSMS)
+                {
+                    results = await EnviarMensageTwillio(twillioService, dest, mensajes);
+                }
+                else
+                {
+                    results = await EnviarMensage(whatsAppService, dest, mensajes);
+                }
 
                 await UdpateDesti(context, dest, results);
 
@@ -94,7 +101,6 @@ public class Worker : BackgroundService
                 return;
             }
         }
-
     }
 
     private IEnumerable<OprBoletin> GetBoletinesPendientes(SicemContext context)

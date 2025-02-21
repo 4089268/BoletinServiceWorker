@@ -8,4 +8,5 @@ public class WorkerSettings
 {
     public int Delay {get;set;}
     public int MaxEnvios {get;set;}
+    public bool UseSMS {get;set;}
 }
