@@ -74,13 +74,20 @@ public class Worker : BackgroundService
 
                 // * send messages, switch between whatsapp and twillio
                 IEnumerable<MessageResult> results = Array.Empty<MessageResult>();
-                if(this.workerSettings.UseSMS)
+
+                if(boletin.Proveedor == "SMS")
                 {
                     results = await EnviarMensageTwillio(twillioService, dest, mensajes);
                 }
-                else
+
+                if(boletin.Proveedor == "WAPP")
                 {
                     results = await EnviarMensage(whatsAppService, dest, mensajes);
+                }
+
+                if(boletin.Proveedor == "EMAIL")
+                {
+                    // TODO: Implemented email
                 }
 
                 await UdpateDesti(context, dest, results);
