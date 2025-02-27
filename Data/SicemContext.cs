@@ -18,6 +18,8 @@ public partial class SicemContext : DbContext
 
     public virtual DbSet<BoletinMensaje> BoletinMensajes { get; set; }
 
+    public virtual DbSet<CatProveedore> CatProveedores { get; set; }
+
     public virtual DbSet<Destinatario> Destinatarios { get; set; }
 
     public virtual DbSet<OprBoletin> OprBoletins { get; set; }
@@ -61,6 +63,23 @@ public partial class SicemContext : DbContext
             entity.HasOne(d => d.Boletin).WithMany(p => p.BoletinMensajes)
                 .HasForeignKey(d => d.BoletinId)
                 .HasConstraintName("FK_BoletinMensaje_Boletin");
+        });
+
+        modelBuilder.Entity<CatProveedore>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("CatProveedores", "Boletin");
+
+            entity.HasIndex(e => e.Name, "UQ__CatProve__737584F601C2DE0C").IsUnique();
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(250)
+                .IsUnicode(false);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.Name)
+                .HasMaxLength(20)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<Destinatario>(entity =>
@@ -111,6 +130,11 @@ public partial class SicemContext : DbContext
             entity.Property(e => e.FinishedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnName("finishedAt");
+            entity.Property(e => e.Proveedor)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("WAPP")
+                .HasColumnName("proveedor");
             entity.Property(e => e.Titulo)
                 .HasMaxLength(250)
                 .IsUnicode(false)

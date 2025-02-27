@@ -13,6 +13,8 @@ public partial class OprBoletin
 
     public DateTime? FinishedAt { get; set; }
 
+    public string? Proveedor { get; set; }
+
     public virtual ICollection<BoletinMensaje> BoletinMensajes { get; set; } = new List<BoletinMensaje>();
 
     public virtual ICollection<Destinatario> Destinatarios { get; set; } = new List<Destinatario>();
