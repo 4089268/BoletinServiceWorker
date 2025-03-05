@@ -23,5 +23,7 @@ public partial class Destinatario
 
     public DateTime? FechaEnvio { get; set; }
 
+    public string? Correo { get; set; }
+
     public virtual OprBoletin Boletin { get; set; } = null!;
 }

@@ -31,7 +31,7 @@ public partial class SicemContext : DbContext
     {
         modelBuilder.Entity<BoletinMensaje>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__BoletinM__3213E83FE25E88AD");
+            entity.HasKey(e => e.Id).HasName("PK__BoletinM__3213E83FF30858ED");
 
             entity.ToTable("BoletinMensaje", "Boletin");
 
@@ -71,7 +71,7 @@ public partial class SicemContext : DbContext
                 .HasNoKey()
                 .ToTable("CatProveedores", "Boletin");
 
-            entity.HasIndex(e => e.Name, "UQ__CatProve__737584F601C2DE0C").IsUnique();
+            entity.HasIndex(e => e.Name, "UQ__CatProve__737584F683CA713A").IsUnique();
 
             entity.Property(e => e.Description)
                 .HasMaxLength(250)
@@ -84,7 +84,7 @@ public partial class SicemContext : DbContext
 
         modelBuilder.Entity<Destinatario>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Destinat__3213E83F405D3C05");
+            entity.HasKey(e => e.Id).HasName("PK__Destinat__3213E83FE6E92155");
 
             entity.ToTable("Destinatario", "Boletin");
 
@@ -92,6 +92,10 @@ public partial class SicemContext : DbContext
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("id");
             entity.Property(e => e.BoletinId).HasColumnName("boletinId");
+            entity.Property(e => e.Correo)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("correo");
             entity.Property(e => e.EnvioMetadata)
                 .IsUnicode(false)
                 .HasColumnName("envioMetadata");
@@ -117,7 +121,7 @@ public partial class SicemContext : DbContext
 
         modelBuilder.Entity<OprBoletin>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OprBolet__3213E83F504B1C73");
+            entity.HasKey(e => e.Id).HasName("PK__OprBolet__3213E83F01A9C76E");
 
             entity.ToTable("OprBoletin", "Boletin");
 

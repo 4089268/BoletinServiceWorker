@@ -31,15 +31,16 @@ public class Worker : BackgroundService
                 var context = scope.ServiceProvider.GetRequiredService<SicemContext>();
                 var whatsAppService = scope.ServiceProvider.GetRequiredService<WhatsAppService>();
                 var twillioService = scope.ServiceProvider.GetRequiredService<TwillioService>();
+                var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
 
-                await DoWork(stoppingToken, context, whatsAppService, twillioService);
+                await DoWork(stoppingToken, context, whatsAppService, twillioService, emailService);
             }
 
             await Task.Delay(workerSettings.Delay, stoppingToken);
         }
     }
 
-    private async Task DoWork(CancellationToken stoppingToken, SicemContext context, WhatsAppService whatsAppService, TwillioService twillioService)
+    private async Task DoWork(CancellationToken stoppingToken, SicemContext context, WhatsAppService whatsAppService, TwillioService twillioService, EmailService emailService)
     {
         var envios = 0;
         var boletines = this.GetBoletinesPendientes(context);
@@ -87,7 +88,16 @@ public class Worker : BackgroundService
 
                 if(boletin.Proveedor == "EMAIL")
                 {
-                    // TODO: Implemented email
+                    if(dest.Correo != null)
+                    {
+                        results = await EnviarCorreo(emailService, dest, boletin.Titulo, mensajes);
+                    }
+                    else
+                    {
+                        var _messageResult = MessageResult.Failure("Correo no proporcionado");
+                        _messageResult.MessageId = mensajes.First().Id.ToString();
+                        results = new List<MessageResult> { _messageResult };
+                    }
                 }
 
                 await UdpateDesti(context, dest, results);
@@ -219,6 +229,28 @@ public class Worker : BackgroundService
             await Task.Delay(1000);
         }
 
+        return response;
+    }
+
+    private async Task<IEnumerable<MessageResult>> EnviarCorreo(EmailService emailService, Destinatario destinatario, string titulo, IEnumerable<BoletinMensaje> boletinMensajes)
+    {
+        var response = new List<MessageResult>();
+
+        // TODO: Prepare the attachments
+        var attachmentsList = new List<string>();
+
+        var messageText = boletinMensajes.FirstOrDefault(item => item.EsArchivo != true);
+
+        // * Send eth message an retrive the response
+        MessageResult result1 = await emailService.SendEmail(
+            destinatario.Correo!,
+            titulo,
+            messageText?.Mensaje ?? "Sin mensaje",
+            isBodyHtml: false,
+            attachments: attachmentsList
+            );
+        result1.MessageId = string.Join(";", boletinMensajes.Select(item => item.Id.ToString()));
+        response.Add(result1);
         return response;
     }
 }
