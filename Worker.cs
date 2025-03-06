@@ -1,10 +1,10 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using BoletinServiceWorker.Data;
 using BoletinServiceWorker.Entities;
 using BoletinServiceWorker.Helpers;
 using BoletinServiceWorker.Models;
 using BoletinServiceWorker.Services;
-using Microsoft.Extensions.Options;
 
 namespace BoletinServiceWorker;
 
@@ -236,9 +236,18 @@ public class Worker : BackgroundService
     {
         var response = new List<MessageResult>();
 
-        // TODO: Prepare the attachments
+        // * Prepare the attachments
         var attachmentsList = new List<string>();
+        foreach(var item in boletinMensajes.Where(item => item.EsArchivo == true))
+        {
+            var fileBytes = Convert.FromBase64String(item.Mensaje);
+            var fileExtension = MimeMapping.MimeUtility.GetExtensions(item.MimmeType!)!.FirstOrDefault();
+            var filePath = Path.Combine(Path.GetTempPath(), $"attachment_{DateTime.Now.Ticks}.{fileExtension}");
+            await File.WriteAllBytesAsync(filePath, fileBytes);
+            attachmentsList.Add(filePath);
+        }
 
+        // * get the message text
         var messageText = boletinMensajes.FirstOrDefault(item => item.EsArchivo != true);
 
         // * Send eth message an retrive the response
